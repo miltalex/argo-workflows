@@ -4,40 +4,20 @@ on:
     types: [created, edited]
 
 jobs:
-  detect-retest:
+  retest:
     runs-on: ubuntu-latest
     steps:
-      - name: Re-run failed jobs
+      # Create check run
+      - uses: octokit/request-action@v2.x
         if: contains(github.event.comment.body, '/retest')
-        uses: actions/github-script@v6
+        id: create_check_run
+        with:
+          route: GET /repos/{owner}/{repo}/actions/runs
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.repository }}
+          name: "Get run ID"
+          workflow_id: ${{ github.event.workflow_id }}
+          branch: ${{ github.event.issue.pull_request.head.ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          script: |
-            const { Octokit } = require("@octokit/core");
-            const { GITHUB_TOKEN } = process.env
-
-            console.log('Retest detected. Triggering re-run of failed jobs...');
-            const prNumber = context.payload.issue.number;
-            const octokit = github.getOctokit(GITHUB_TOKEN)
-
-            // Get the latest run ID for the PR
-            const runsResponse = await octokit.request('GET /repos/{owner}/{repo}/actions/runs', {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 1,
-              workflow_id: '${{ github.event.workflow_id }}',
-              branch: '${{ github.event.issue.pull_request.head.ref }}',
-              status: 'completed',
-              event: 'pull_request',
-              actor: 'app',
-            });
-            const latestRunID = runsResponse.data.workflow_runs[0].id;
-
-            // Trigger re-run of failed jobs using GitHub CLI
-            await octokit.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun', {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: latestRunID,
-            });
-            await exec(`gh run rerun ${latestRunID} --failed`);
+      - run: "echo latest release: '${{ steps.create_check_run.outputs.data }}'"
