@@ -1,6 +1,6 @@
 name: Detect and Trigger Retest
 on:
-issue_comment:
+  issue_comment:
     types: [created, edited]
 
 jobs:
