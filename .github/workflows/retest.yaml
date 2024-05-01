@@ -13,7 +13,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          SHA: ${{ github.event.pull_request.head.sha }}
+          SHA: ${{ github.event.issue.pull_request.head.sha }}
         run: |
           RUNID=$(gh api 'repos/$REPO/actions/runs?event=pull_request&head_sha=$SHA' | jq -r '.workflow_runs[] | select(.name == "CI") | .id'| head -n 1)
           echo $RUNID
