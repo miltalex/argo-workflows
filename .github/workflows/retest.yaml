@@ -8,15 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Create get run id
-      - uses: octokit/request-action@v2.x
+      - name: Retest
         if: contains(github.event.comment.body, '/retest')
-        id: create_check_run
-        with:
-          route: GET /repos/{owner}/{repo}/actions/runs
-          owner: ${{ github.repository_owner }}
-          repo: ${{ github.repository }}
-          workflow_id: ${{ github.event.workflow_id }}
-          head: ${{ github.event.issue.pull_request.head.sha }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: "echo latest release: '${{ steps.create_check_run.outputs.data }}'"
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{github.event.pull_request.head.sha}}
+        run: |
+          RUNID=$(gh api repos/$OWNER/$REPO/commits/$COMMIT_SHA/check-runs | jq -r '.check_runs[] | select(.name == "CI") | .html_url | capture("/runs/(?<number>[0-9]+)/jobs") | .number' | sed 's/"//g' | head -n 1)
+          echo $RUNID
