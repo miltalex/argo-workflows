@@ -18,4 +18,4 @@ jobs:
           RUNID=$(gh api repos/$REPO/actions/runs | jq -r '.workflow_runs[] | select(.name == "CI") | .id'| head -n 1)
           echo $RUNID
           echo "latest run is $RUNID"
-          gh run rerun $RUNID
+          gh api --method POST repos/$REPO/actions/runs/$RUNID/rerun-failed-jobs
