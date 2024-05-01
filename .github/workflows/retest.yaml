@@ -12,12 +12,8 @@ jobs:
         if: contains(github.event.comment.body, '/retest')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OWNER: ${{ github.repository_owner }}
           REPO: ${{ github.repository }}
           COMMIT_SHA: ${{github.event.pull_request.head.sha}}
         run: |
-          echo $OWNER
-          echo $REPO
-          echo $COMMIT_SHA
-          RUNID=$(gh api repos/$OWNER/$REPO/commits/$COMMIT_SHA/check-runs | jq -r '.check_runs[] | select(.name == "CI") | .html_url | capture("/runs/(?<number>[0-9]+)/jobs") | .number' | sed 's/"//g' | head -n 1)
+          RUNID=$(gh api repos/$REPO/actions/runs | jq -r '.workflow_runs[] | select(.name == "CI") | .id'| head -n 1)
           echo $RUNID
