@@ -4,6 +4,7 @@ on:
     types: [created, edited]
 
 permissions:
+  actions: write
   contents: read
 
 jobs:
