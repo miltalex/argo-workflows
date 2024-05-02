@@ -13,7 +13,7 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Retest
+      - name: Retest failing jobs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
