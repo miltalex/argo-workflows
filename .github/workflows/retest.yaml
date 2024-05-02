@@ -1,0 +1,22 @@
+name: Detect and Trigger Retest
+on:
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  retest:
+    runs-on: ubuntu-latest
+    if: github.event.comment.author_association == 'MEMBER' && github.event.comment.body == '/retest'
+    steps:
+      - name: Retest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          SHA_REF=$(gh api "/repos/$REPO/pulls/$PR_NUMBER/commits?per_page=1" | jq -r '.[].sha')
+          RUN_ID=$(gh api "repos/$REPO/actions/workflows/ci-build.yaml/runs?per_page=1&event=pull_request&head_sha=$SHA_REF" | jq -r ".workflow_runs[] | .id"| head -n 1)
+          gh api --method POST repos/$REPO/actions/runs/$RUN_ID/rerun-failed-jobs
