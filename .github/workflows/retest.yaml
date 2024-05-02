@@ -4,13 +4,14 @@ on:
     types: [created, edited]
 
 permissions:
-  actions: write
   contents: read
 
 jobs:
   retest:
     runs-on: ubuntu-latest
-    if: github.event.comment.body == '/retest'
+    if: github.event.comment.author_association == 'MEMBER' && github.event.comment.body == '/retest'
+    permissions:
+      actions: write
     steps:
       - name: Retest
         env:
@@ -19,7 +20,5 @@ jobs:
           PR_NUMBER: ${{ github.event.issue.number }}
         run: |
           SHA_REF=$(gh api "/repos/$REPO/pulls/$PR_NUMBER/commits?per_page=1" | jq -r '.[].sha')
-          echo $SHA_REF
-          RUN_ID=$(gh api "repos/$REPO/actions/workflows/ci-build.yaml/runs?per_page=1&event=pull_request&head_sha=$SHA_REF" | jq -r ".workflow_runs[] | .id"| head -n 1)
-          echo $RUN_ID
+          RUN_ID=$(gh api "repos/$REPO/actions/workflows/ci-build.yaml/runs?per_page=1&event=pull_request&head_sha=$SHA_REF" | jq -r '.workflow_runs[] | .id')
           gh api --method POST repos/$REPO/actions/runs/$RUN_ID/rerun
