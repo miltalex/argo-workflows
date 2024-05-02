@@ -21,4 +21,4 @@ jobs:
         run: |
           SHA_REF=$(gh api "/repos/$REPO/pulls/$PR_NUMBER/commits?per_page=1" | jq -r '.[].sha')
           RUN_ID=$(gh api "repos/$REPO/actions/workflows/ci-build.yaml/runs?per_page=1&event=pull_request&head_sha=$SHA_REF" | jq -r '.workflow_runs[] | .id')
-          gh api --method POST repos/$REPO/actions/runs/$RUN_ID/rerun
+          gh api --method POST repos/$REPO/actions/runs/$RUN_ID/rerun-failed-jobs
