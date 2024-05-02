@@ -12,6 +12,7 @@ jobs:
     if: github.event.comment.body == '/retest'
     permissions:
       contents: write
+      actions: write
     steps:
       - name: Retest
         env:
